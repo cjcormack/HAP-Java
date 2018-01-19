@@ -3,6 +3,8 @@ package com.beowulfe.hap;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.List;
 
 import com.beowulfe.hap.impl.HomekitWebHandler;
 
@@ -19,8 +21,14 @@ public class HomekitStandaloneAccessoryServer {
 
 	HomekitStandaloneAccessoryServer(HomekitAccessory accessory,
 			HomekitWebHandler webHandler, InetAddress localhost,
-			HomekitAuthInfo authInfo) throws UnknownHostException, IOException {
-		root = new HomekitRoot(accessory.getLabel(), webHandler, localhost, authInfo);
+			HomekitAuthInfo authInfo, String jmdnsName) throws UnknownHostException, IOException {
+
+		List<InetAddress> addressList = null;
+		if (localhost != null) {
+			addressList = Collections.singletonList(localhost);
+		}
+
+		root = new HomekitRoot(accessory.getLabel(), webHandler, addressList, authInfo, jmdnsName);
 		root.addAccessory(accessory);
 	}
 	

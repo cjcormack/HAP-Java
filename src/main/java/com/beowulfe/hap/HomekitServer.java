@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
+import java.util.Collections;
+import java.util.List;
 
 import com.beowulfe.hap.impl.HomekitBridge;
 import com.beowulfe.hap.impl.HomekitUtils;
@@ -12,7 +14,7 @@ import com.beowulfe.hap.impl.http.impl.HomekitHttpServer;
 /**
  * The main entry point for hap-java. Creating an instance of this class will listen for Homekit connections
  * on the supplied port. Only a single root accessory can be added for each unique instance and port, however, 
- * that accessory may be a {@link #createBridge(HomekitAuthInfo, String, String, String, String) bridge accessory}
+ * that accessory may be a {@link #createBridge(HomekitAuthInfo, String, String, String, String, String) bridge accessory}
  * containing child accessories.
  * 
  * The {@link HomekitAuthInfo HomekitAuthInfo} argument when creating accessories should be an implementation supplied
@@ -61,7 +63,7 @@ public class HomekitServer {
 	 * @throws IOException when the server cannot bind to the supplied port
 	 */
 	public HomekitServer(int port) throws IOException {
-		this(InetAddress.getLocalHost(), port);
+		this(null, port);
 	}
 	
 	/**
@@ -84,7 +86,7 @@ public class HomekitServer {
 	public HomekitStandaloneAccessoryServer createStandaloneAccessory(HomekitAuthInfo authInfo, 
 			HomekitAccessory accessory) throws IOException {
 		return new HomekitStandaloneAccessoryServer(accessory, http,
-				localAddress, authInfo);
+				localAddress, authInfo, null);
 	}
 	
 	/**
@@ -97,12 +99,19 @@ public class HomekitServer {
 	 * @param manufacturer manufacturer of the bridge. This information is exposed to iOS for unknown purposes.
 	 * @param model model of the bridge. This is also exposed to iOS for unknown purposes.
 	 * @param serialNumber serial number of the bridge. Also exposed. Purposes also unknown.
+	 * @param jmdnsName name to use when broadcasting this bridge to HomeKit.
 	 * @return the bridge, from which you can {@link HomekitRoot#addAccessory add accessories} and then {@link HomekitRoot#start start} handling requests.
 	 * @throws IOException when mDNS cannot connect to the network
 	 */
 	public HomekitRoot createBridge(HomekitAuthInfo authInfo, String label, String manufacturer,
-			String model, String serialNumber) throws IOException {
-		HomekitRoot root = new HomekitRoot(label, http, localAddress, authInfo);
+			String model, String serialNumber, String jmdnsName) throws IOException {
+
+		List<InetAddress> addressList = null;
+		if (localAddress != null) {
+			addressList = Collections.singletonList(localAddress);
+		}
+
+		HomekitRoot root = new HomekitRoot(label, http, addressList, authInfo, jmdnsName);
 		root.addAccessory(new HomekitBridge(label, serialNumber, model, manufacturer));
 		return root;
 	}

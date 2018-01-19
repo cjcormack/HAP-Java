@@ -11,11 +11,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Provides advertising and handling for Homekit accessories. This class handles the advertising of Homekit accessories and 
  * contains one or more accessories. When implementing a bridge accessory, you will interact with this class directly. Instantiate
- * it via {@link HomekitServer#createBridge(HomekitAuthInfo, String, String, String, String)}. For single accessories, this is composed
+ * it via {@link HomekitServer#createBridge(HomekitAuthInfo, String, String, String, String, String)}. For single accessories, this is composed
  * by {@link HomekitStandaloneAccessoryServer}.
  *
  * @author Andy Lintner
@@ -33,9 +35,9 @@ public class HomekitRoot {
 	private boolean started = false;
 	private int configurationIndex = 1;
 
-	HomekitRoot(String label, HomekitWebHandler webHandler, InetAddress localhost, 
-			HomekitAuthInfo authInfo) throws IOException {
-		this(label, webHandler, authInfo, new JmdnsHomekitAdvertiser(localhost));
+	HomekitRoot(String label, HomekitWebHandler webHandler, List<InetAddress> addressList,
+			HomekitAuthInfo authInfo, String jmdnsName) throws IOException {
+		this(label, webHandler, authInfo, new JmdnsHomekitAdvertiser(addressList, jmdnsName));
 	}
 	
 	HomekitRoot(String label, HomekitWebHandler webHandler, HomekitAuthInfo authInfo, 
