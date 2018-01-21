@@ -107,34 +107,31 @@ public class JmdnsHomekitAdvertiser {
 			this.discoverable = discoverable;
 			if (isAdvertising) {
 				logger.info("Re-creating service due to change in discoverability to "+discoverable);
-				for (JmDNS jmdns : jmdnsList) {
-					jmdns.unregisterAllServices();
-					try {
-						registerService(jmdns);
-					} catch (IOException e) {
-						logger.error("Error registering", e);
-					}
-				}
+				reRegisterServices();
 			}
 		}
 	}
-	
+
 	public synchronized void setConfigurationIndex(int revision) throws IOException {
 		if (this.configurationIndex != revision) {
 			this.configurationIndex = revision;
 			if (isAdvertising) {
 				logger.info("Re-creating service due to change in configuration index to "+revision);
-				jmdnsList.parallelStream().forEach((jmdns) -> {
-					jmdns.unregisterAllServices();
-					try {
-						registerService(jmdns);
-					} catch (IOException e) {
-						logger.error("Error registering", e);
-					}
-				});
+				reRegisterServices();
 
 			}
 		}
+	}
+
+	private void reRegisterServices() {
+		jmdnsList.parallelStream().forEach((jmdns) -> {
+			jmdns.unregisterAllServices();
+			try {
+				registerService(jmdns);
+			} catch (IOException e) {
+				logger.error("Error registering", e);
+			}
+		});
 	}
 	
 	private void registerService(JmDNS jmdns) throws IOException {
